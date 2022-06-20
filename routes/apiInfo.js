@@ -2,6 +2,7 @@ const Router = require('express')
 const { append } = require('express/lib/response')
 const args = require('../src/yargs')
 const compression = require('compression')
+const logger = require('../logger.js')
 
 const apiInfo = Router()
 
@@ -31,6 +32,12 @@ apiInfo.get('/infozip', compression(), (req, res) => {
         "Process id": process.pid,
         "Carpeta del proyecto": process.cwd()
     })
+})
+
+apiInfo.get('*', (req, res) => {
+    const { url, method } = req
+    logger.warn(`La ruta ${method} ${url} no está implementada`) 
+    res.send(`La ruta ${method} ${url} no está implementada`)
 })
 
 module.exports = apiInfo
