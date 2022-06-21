@@ -1,2 +1,6 @@
 {"level":"warn","message":"La ruta GET /infohola no está implementada"}
 {"level":"warn","message":"La ruta GET /favicon.ico no está implementada"}
+{"level":"error","message":"El nombre no puede estar vacío"}
+{"level":"error","message":"El precio del producto no puede estar vacío"}
+{"level":"error","message":"El precio del producto debe ser un valor númerico"}
+{"level":"error","message":"El precio del producto debe ser un valor númerico"}

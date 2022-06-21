@@ -13,6 +13,8 @@ const advancedOptins = { useNewUrlParser: true, useUnifiedTopology: true }
 
 /* Yargs */
 const args = require('./src/yargs')
+const logger = require('./logger.js')
+
 const apiInfo = require('./routes/apiInfo')
 /* Process */
 const apiRandom = require('./routes/apiRandom')
@@ -95,18 +97,37 @@ function isAuth(req, res, next) {
     }
 }
 
-app.get('/', (req, res) => {
+app.get('/home', (req,res)=> { 
     let productos = [
         {nombre: 'Escuadra', precio: 20, foto: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Squadra_45.jpg/640px-Squadra_45.jpg"}, 
         {nombre: 'Regla', precio: 10, foto: "https://image.shutterstock.com/image-vector/school-measuring-plastic-ruler-20-260nw-615662024.jpg"}, 
         {nombre: 'Compás', precio: 20, foto: "https://thumbs.dreamstime.com/b/comp%C3%A1s-de-dibujo-aislado-rojo-132996590.jpg"}
     ]    
-})
+    const { user: usuario } = req.session.passport
+    res.render('productos', {usuario, productos})
+} ) 
 
 app.post('/productos', (req, res) => {
+    const {nombre, precio, foto } = req.body
+    
+    if (nombre === '') {
+        logger.error('El nombre del producto no puede estar vacío')
+        res.send('El nombre del producto no puede estar vacío.')
+    }
+
+    if (precio === ''){
+        logger.error('El precio del producto no puede estar vacío')
+        res.send('El precio del producto no puede estar vacío.')
+    }
+
+    if (isNaN(precio)){
+        logger.error('El precio del producto debe ser un valor númerico')
+        res.send('El precio del producto debe ser un valor númerico')
+    }
+
     productos.push(req.body)
     console.log(productos)
-    res.redirect('/')
+    res.redirect('/home')
 })
 
 io.on('connection', function(socket){
@@ -126,6 +147,7 @@ io.on('connection', function(socket){
 
 /* Login */ 
 app.post('/login', passport.authenticate("login", {successRedirect: "/home", failureRedirect: "/registrarse", passReqToCallback: true}))
+
 app.get('/registrarse', (req, res)=>{
     res.redirect('registrarse.html')
 })
@@ -133,10 +155,7 @@ app.post('/registrarse', async(req, res) => {
    await newUser.guardar(req.body)
     res.redirect('/')
 })
-app.get('/home', (req,res)=>{
-    const { user: usuario } = req.session.passport
-    res.render('productos', {usuario, productos})
-} )
+
 app.post('/logout', (req, res) => {
     //session destroy
     req.logout(function(err) {
@@ -147,7 +166,6 @@ app.post('/logout', (req, res) => {
 
 app.use(apiInfo)
 app.use(apiRandom)
-
 
 const PORT = args.port
 const srv = server.listen(PORT, () => {
